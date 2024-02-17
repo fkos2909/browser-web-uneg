@@ -1,4 +1,8 @@
 const ResultsPage = (props) => {
-    return <div className="background">Results...</div>;
+    const {line} = props.line
+    return  <div className="background ">
+                <h1 className="form-title">Results...{ line }</h1>
+            </div>;
 };
 export default ResultsPage;
+
