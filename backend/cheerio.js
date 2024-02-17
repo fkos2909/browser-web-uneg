@@ -37,8 +37,8 @@ const saveJson = (data) => {
 }
 
 const domains = [
-    {1:'https://search.scielo.org/?lang=es&count=15&from=1&output=site&sort=&format=summary&fb=&page=1&q=lenguajes'},
-    {2:'https://www.biomedcentral.com/search?query=languages+and+culture&searchType=publisherSearch'}, 
+    // {1:'https://search.scielo.org/?lang=es&count=15&from=1&output=site&sort=&format=summary&fb=&page=1&q=lenguajes'},
+    {1:'https://www.biomedcentral.com/search?query=&searchType=publisherSearch'}, 
     // 'https://www.osti.gov/search/semantic:', 
     // 'https://core.ac.uk/search?q=&page=1', 
     // 'https://eric.ed.gov/?q=',
@@ -83,16 +83,24 @@ $('ol.item-list')
     }) 
     .toArray(); 
 
-const crawl = async (url, num) => { 
+const getData = async (url) => {
     const { data } = await axios.get(url); 
-    const $ = cheerio.load(data); 
+    return cheerio.load(data); 
+}
+
+const crawl = async (url_base, num, line) => { 
+    const search = line.split(' ').join("+");
+    const url = new URL(url_base);
+
     switch(num){
-        case 1:
-            const contentScielo = extractContentScielo($);
+        case 2:
+            url.searchParams.set("query", search);
+            const contentScielo = extractContentScielo(await getData(url.href.replace('%2B', '+')));
             saveJson(contentScielo);
             break;
-        case 2:
-            const contentBioMed = extractContentBioMed($);
+        case 1:
+            url.searchParams.set("query", search);
+            const contentBioMed = extractContentBioMed(await getData(url.href.replace('%2B', '+')));
             saveJson(contentBioMed);
             break;
         case 3:
@@ -108,8 +116,8 @@ const crawl = async (url, num) => {
 
 const crawlTask = async (req, res) => {
 	for (let i=0; i<domains.length; i++) {
-		await crawl(domains[i][i+1], i+1); 
-        
+		await crawl(domains[i][i+1], i+1, req.body.line); 
+        // console.log(req.body.line);
 	} 
     return res;
 }; 

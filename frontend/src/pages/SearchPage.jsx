@@ -13,7 +13,7 @@ export const SearchPage = () => {
 
     const feacthLinks = async () => {
         
-        await getLinks();
+        await getLinks(location.state);
         setLoading(false);
     }
 

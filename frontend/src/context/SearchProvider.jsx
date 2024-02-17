@@ -19,12 +19,11 @@ export const SearchProvider = ({children}) => {
     }
 
     //Llamar al API
-    const getLinks = async () => {
-        //Podemos pasar la line en el url y de ahí lo usamos en pupperteer
+    const getLinks = async (line = '') => {
                 
         try{
-            await axios.get(
-                'http://localhost:3001/api'
+            await axios.post(
+                'http://localhost:3001/api', {line: line}
             ).then(r => console.log(r.data) )
             .catch(function (error) {
                 if (error.response) {
@@ -39,7 +38,7 @@ export const SearchProvider = ({children}) => {
                 // console.log(error.config);
             })
             .finally( setLoading(false) )
-            await timeout(10000);
+            await timeout(1000);
             await axios.get(
                 'http://localhost:3001/api/web'
             )

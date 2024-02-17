@@ -40,7 +40,7 @@ app.get("/newSearch/api", async (req, res) => {
     return res;
 });
 
-app.get("/api", async (req, res) => {
+app.post("/api", async (req, res) => {
     await crawlTask(req, res);
     return res.json({response: 'success'});
 });
