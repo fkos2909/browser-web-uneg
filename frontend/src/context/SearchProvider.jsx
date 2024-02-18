@@ -7,7 +7,7 @@ import { useForm } from "../hook/useForm";
 export const SearchProvider = ({children}) => {
     const [allLinks, setAllLinks] = useState([]);
     const [showLinks, setShowLinks] = useState([]);
-    const [offset, setOffset] = useState(15);
+    const [offset, setOffset] = useState(0);
     const [loading, setLoading] = useState(true);
 
     // hook
@@ -18,6 +18,7 @@ export const SearchProvider = ({children}) => {
     //Llamar al API
     const getLinks = async (line = '') => {
         try{
+            console.log(line);
             await axios.post(
                 'http://localhost:3001/api/search', {line: line}
             ).then(r => console.log(r.data) )
@@ -38,8 +39,9 @@ export const SearchProvider = ({children}) => {
                 'http://localhost:3001/api/results'
             )
             .then(r => {
+                const results = r.data.slice(offset, offset+15);
                 setAllLinks(r.data);
-                setShowLinks(r.data.slice(0, offset));
+                setShowLinks([...showLinks, ...results]);
             })
             .catch(function (error) {
                 if (error.response) {

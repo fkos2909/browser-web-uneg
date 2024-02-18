@@ -4,7 +4,7 @@ import { CardLink } from './CardLink';
 
 export const LinksList = () => {
 
-    const { allLinks } = useContext(SearchContext);
+    // const { allLinks } = useContext(SearchContext);
     const { showLinks } = useContext(SearchContext);
 
     return (
