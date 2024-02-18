@@ -1,12 +1,13 @@
 import { SearchContext } from "./SearchContext"
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from 'axios'
 import { useForm } from "../hook/useForm";
 
 
 export const SearchProvider = ({children}) => {
     const [allLinks, setAllLinks] = useState([]);
-    const [offset, setOffset] = useState(0);
+    const [showLinks, setShowLinks] = useState([]);
+    const [offset, setOffset] = useState(15);
     const [loading, setLoading] = useState(true);
 
     // hook
@@ -14,16 +15,11 @@ export const SearchProvider = ({children}) => {
         valueSearch: ''
     })
 
-    function timeout(delay) {
-        return new Promise( res => setTimeout(res, delay) );
-    }
-
     //Llamar al API
     const getLinks = async (line = '') => {
-                
         try{
             await axios.post(
-                'http://localhost:3001/api', {line: line}
+                'http://localhost:3001/api/search', {line: line}
             ).then(r => console.log(r.data) )
             .catch(function (error) {
                 if (error.response) {
@@ -38,11 +34,13 @@ export const SearchProvider = ({children}) => {
                 // console.log(error.config);
             })
             .finally( setLoading(false) )
-            await timeout(1000);
             await axios.get(
-                'http://localhost:3001/api/web'
+                'http://localhost:3001/api/results'
             )
-            .then(r => setAllLinks(r.data) )
+            .then(r => {
+                setAllLinks(r.data);
+                setShowLinks(r.data.slice(0, offset));
+            })
             .catch(function (error) {
                 if (error.response) {
                         console.log(error.response.data);
@@ -58,8 +56,7 @@ export const SearchProvider = ({children}) => {
             .finally( setLoading(false) )
 
         }catch(e){
-            // console.log(e);
-            const el = e;
+            console.log(e);
         }
         
     }
@@ -75,6 +72,7 @@ export const SearchProvider = ({children}) => {
                 onInputChange,
                 onResetForm,
                 allLinks,
+                showLinks,
                 getLinks,
                 onClickLoadMore,
                 offset

@@ -6,13 +6,11 @@ import { useLocation } from 'react-router-dom';
 export const SearchPage = () => {
 
     const { getLinks, allLinks, onClickLoadMore, offset } = useContext(SearchContext);
-    const [loading, setLoading] = useState(true); 
-    // const [links, setLinks] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const location = useLocation();
 
     const feacthLinks = async () => {
-        
         await getLinks(location.state);
         setLoading(false);
     }

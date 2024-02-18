@@ -3,7 +3,7 @@ const cheerio = require("cheerio");
 const fs = require("fs");
 const path = require("path");
 
-const pathJson = path.join(__dirname, './data.json');
+const pathJson = path.join(__dirname, '../data.json');
 
 const readJson = () => {
     const base = {articles: []};
@@ -37,14 +37,14 @@ const saveJson = (data) => {
 }
 
 const domains = [
-    // {1:'https://search.scielo.org/?lang=es&count=15&from=1&output=site&sort=&format=summary&fb=&page=1&q=lenguajes'},
+    {0:'https://search.scielo.org/?lang=es&count=15&from=1&output=site&sort=&format=summary&fb=&page=1&q='},
     {1:'https://www.biomedcentral.com/search?query=&searchType=publisherSearch'}, 
-    // 'https://www.osti.gov/search/semantic:', 
-    // 'https://core.ac.uk/search?q=&page=1', 
-    // 'https://eric.ed.gov/?q=',
-    // 'https://arxiv.org/search/?query=&searchtype=all&source=header',
-    // 'https://dlc.dlib.indiana.edu/dlc/search?scope=%2F&query=&rpp=10&sort_by=0&order=DESC&submit=Go',
-    // 'https://www.econbiz.de/Search/Results?lookfor=&type=AllFields'
+    {2:'https://www.osti.gov/search/semantic:'}, 
+    {3:'https://core.ac.uk/search?q=&page=1'}, 
+    {4:'https://eric.ed.gov/?q='},
+    {5:'https://arxiv.org/search/?query=&searchtype=all&source=header'},
+    {6:'https://dlc.dlib.indiana.edu/dlc/search?scope=%2F&query=&rpp=10&sort_by=0&order=DESC&submit=Go'},
+    {7:'https://www.econbiz.de/Search/Results?lookfor=&type=AllFields&limit=10&sort=relevance'}
 ]
 
 const extractContentScielo = ($) => 
@@ -72,14 +72,78 @@ $('.c-listing__item')
     .toArray(); 
 
 const extractContentOsti = ($) => 
-$('ol.item-list') 
+$('.article') 
     .map((_, item) => { 
+        const url = 'https://www.osti.gov';
         const $item = $(item); 
+        const href = $item.find('a.fulltext-link').attr('href') === undefined ? $item.find('a.doi-link').attr('href') : url.concat('', $item.find('a.fulltext-link').attr('href'));
         return {  
             id: $item.find('a[data-ostiid]').attr('data-ostiid'), 
             title: $item.find('h2.title').find('a').text(), 
-            url: $item.find('a.fulltext-link').attr('href'), 
-        }; //$item.find('a.fulltext-link') !== null ? $item.find('a.fulltext-link').attr('href') : $item.find('a.doi-link').attr('href')
+            url: href, 
+        }; 
+    }) 
+    .toArray(); 
+
+const extractContentCore = ($) => 
+$('.styles-container-2Sli1') 
+    .map((_, item) => {
+        const $item = $(item); 
+        return {  
+            id: $item.attr('id'), 
+            title: $item.find('h3.styles-title-1k6Ib').find('a').text(), 
+            url: $item.find('h3.styles-title-1k6Ib').find('a').attr('href'), 
+        }; 
+    }) 
+    .toArray(); 
+
+const extractContentEric = ($) => 
+$('.r_i') 
+    .map((_, item) => {
+        const $item = $(item); 
+        return {  
+            id: $item.attr('id'), 
+            title: $item.find('.r_t').find('a').text(), 
+            url: $item.find('.r_f').find('a').attr('href'), 
+        }; 
+    }) 
+    .toArray(); 
+
+const extractContentArxiv = ($) => 
+$('.arxiv-result') 
+    .map((_, item) => {
+        const $item = $(item); 
+        return {  
+            id: $item.find('.list-title').find('a').text(), 
+            title: $item.find('.title').text().replace('\n      \n        ', '').replace('\n      \n    ', ''), 
+            url: $item.find('.list-title').find('span').find('a').attr('href'), 
+        }; 
+    }) 
+    .toArray(); 
+
+const extractContentDlc = ($) => 
+$('.artifact-title') 
+    .map((_, item) => {
+        const url = 'https://www.econbiz.de/';
+        const $item = $(item); 
+        return {  
+            id: $item.find('a').attr('href'), 
+            title: $item.find('a').text(), 
+            url: url.concat('', $item.find('a').attr('href')), 
+        }; 
+    }) 
+    .toArray(); 
+
+const extractContentEconbiz = ($) => 
+$('.result') 
+    .map((_, item) => {
+        const url = 'https://www.econbiz.de';
+        const $item = $(item); 
+        return {  
+            id: $item.attr('id'), 
+            title: $item.find('.result-content').find('a.title').text().replace('\n                              ', '').replace('\n        ', ''), 
+            url: url.concat('', $item.find('.result-content').find('a.title').attr('href')), 
+        }; 
     }) 
     .toArray(); 
 
@@ -91,10 +155,9 @@ const getData = async (url) => {
 const crawl = async (url_base, num, line) => { 
     const search = line.split(' ').join("+");
     const url = new URL(url_base);
-
     switch(num){
-        case 2:
-            url.searchParams.set("query", search);
+        case 0:
+            url.searchParams.set("q", search);
             const contentScielo = extractContentScielo(await getData(url.href.replace('%2B', '+')));
             saveJson(contentScielo);
             break;
@@ -103,12 +166,38 @@ const crawl = async (url_base, num, line) => {
             const contentBioMed = extractContentBioMed(await getData(url.href.replace('%2B', '+')));
             saveJson(contentBioMed);
             break;
+        case 2:
+            const contentOsti = extractContentOsti(await getData(url.href.concat('', line.split(' ').join("%20"))));
+            saveJson(contentOsti);
+            break;
         case 3:
-            // const contentOsti = extractContentOsti($);
-            // saveJson(contentOsti);
+            url.searchParams.set("q", search);
+            const contentCore = extractContentCore(await getData(url.href.replace('%2B', '+')));
+            saveJson(contentCore);
+            break;
+        case 4:
+            url.searchParams.set("q", search);
+            const contentEric = extractContentEric(await getData(url.href.replace('%2B', '+')));
+            saveJson(contentEric);
+            break;
+        case 5:
+            url.searchParams.set("query", search);
+            const contentArxiv = extractContentArxiv(await getData(url.href.replace('%2B', '+')));
+            saveJson(contentArxiv);
+            break;
+        case 6:
+            url.searchParams.set("query", search);
+            const contentDlc = extractContentDlc(await getData(url.href.replace('%2B', '+')));
+            saveJson(contentDlc);
+            break;
+        case 7:
+            
+            url.searchParams.set("lookfor", search);
+            const contentEconbiz = extractContentEconbiz(await getData(url.href.replace('%2B', '+')));
+            saveJson(contentEconbiz);
             break;
         default:
-            console-log('default');
+            console.log('default');
             break;
     }
     
@@ -116,14 +205,15 @@ const crawl = async (url_base, num, line) => {
 
 const crawlTask = async (req, res) => {
 	for (let i=0; i<domains.length; i++) {
-		await crawl(domains[i][i+1], i+1, req.body.line); 
-        // console.log(req.body.line);
+        
+		await crawl(domains[i][i], i, req.body.line);
 	} 
     return res;
 }; 
 
 const crawlTaskResults = async (req, res) => {
     let articles = readJson();
+    writeJson([]);
     return articles;
 }
 

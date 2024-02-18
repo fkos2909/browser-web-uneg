@@ -155,7 +155,7 @@ header form {
 }
 
 /* Card List Pokemon */
-.card-list-pokemon {
+.card-list {
 	display: flex;
 	flex-direction: column;
 	gap: 20px;

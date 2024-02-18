@@ -1,11 +1,12 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import { SearchContext } from '../context/SearchContext';
+
 import logo from '../assets/logo.png';
 
 
 export const NavigateBar = () => {
-    const { onInputChange, valueSearch, onResetForm } = useContext(SearchContext);
+    const { onInputChange, valueSearch, onResetForm, getLinks } = useContext(SearchContext);
     const navigate = useNavigate();
     const onSearchSumit = (e) => {
         e.preventDefault();
@@ -14,7 +15,6 @@ export const NavigateBar = () => {
         })
         onResetForm();
     }
-
     return (
         <>
             <header>
@@ -50,7 +50,6 @@ export const NavigateBar = () => {
                             placeholder='Buscar '
                         />
                     </div>
-
                     <button className='btn-search'>Buscar</button>
                 </form>
             </header>
