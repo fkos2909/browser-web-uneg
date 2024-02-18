@@ -6,9 +6,9 @@ import logo from '../assets/logo.png';
 
 
 export const NavigateBar = () => {
-    const { onInputChange, valueSearch, onResetForm, getLinks } = useContext(SearchContext);
+    const { onInputChange, valueSearch, onResetForm } = useContext(SearchContext);
     const navigate = useNavigate();
-    const onSearchSumit = (e) => {
+    const onNewSearchSumit = (e) => {
         e.preventDefault();
         navigate('/search', {
             state: valueSearch
@@ -25,7 +25,7 @@ export const NavigateBar = () => {
                     />
                 </Link>
 
-                <form onSubmit={onSearchSumit}>
+                <form onSubmit={onNewSearchSumit}>
                     <div className='form-group'>
                         <svg
                             xmlns='http://www.w3.org/2000/svg'
@@ -44,7 +44,7 @@ export const NavigateBar = () => {
                         <input
                             type='search'
                             name='valueSearch'
-                            id=''
+                            id='navigateSearch'
                             value={valueSearch}
                             onChange={onInputChange}
                             placeholder='Buscar '

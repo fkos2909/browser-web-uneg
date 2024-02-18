@@ -45,7 +45,7 @@ export const HomePage = () => {
                         <input
                             type='search'
                             name='valueSearch'
-                            id=''
+                            id='homeSearch'
                             value={valueSearch}
                             onChange={onInputChange}
                             placeholder='Buscar'

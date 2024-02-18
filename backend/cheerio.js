@@ -153,54 +153,89 @@ const getData = async (url) => {
 }
 
 const crawl = async (url_base, num, line) => { 
-    const search = line.split(' ').join("+");
-    const url = new URL(url_base);
-    switch(num){
-        case 0:
-            url.searchParams.set("q", search);
-            const contentScielo = extractContentScielo(await getData(url.href.replace('%2B', '+')));
-            saveJson(contentScielo);
-            break;
-        case 1:
-            url.searchParams.set("query", search);
-            const contentBioMed = extractContentBioMed(await getData(url.href.replace('%2B', '+')));
-            saveJson(contentBioMed);
-            break;
-        case 2:
-            const contentOsti = extractContentOsti(await getData(url.href.concat('', line.split(' ').join("%20"))));
-            saveJson(contentOsti);
-            break;
-        case 3:
-            url.searchParams.set("q", search);
-            const contentCore = extractContentCore(await getData(url.href.replace('%2B', '+')));
-            saveJson(contentCore);
-            break;
-        case 4:
-            url.searchParams.set("q", search);
-            const contentEric = extractContentEric(await getData(url.href.replace('%2B', '+')));
-            saveJson(contentEric);
-            break;
-        case 5:
-            url.searchParams.set("query", search);
-            const contentArxiv = extractContentArxiv(await getData(url.href.replace('%2B', '+')));
-            saveJson(contentArxiv);
-            break;
-        case 6:
-            url.searchParams.set("query", search);
-            const contentDlc = extractContentDlc(await getData(url.href.replace('%2B', '+')));
-            saveJson(contentDlc);
-            break;
-        case 7:
-            
-            url.searchParams.set("lookfor", search);
-            const contentEconbiz = extractContentEconbiz(await getData(url.href.replace('%2B', '+')));
-            saveJson(contentEconbiz);
-            break;
-        default:
-            console.log('default');
-            break;
+    try{
+        const search = line.split(' ').join("+");
+        const url = new URL(url_base);
+        switch(num){
+            case 0:
+                try{
+                    url.searchParams.set("q", search);
+                    const contentScielo = extractContentScielo(await getData(url.href.replace('%2B', '+')));
+                    saveJson(contentScielo);
+                }catch(e){
+                    console.log(e);
+                }
+                break;
+            case 1:
+                try{    
+                    url.searchParams.set("query", search);
+                    const contentBioMed = extractContentBioMed(await getData(url.href.replace('%2B', '+')));
+                    saveJson(contentBioMed);
+                }catch(e){
+                    console.log(e);
+                }               
+                break;
+            case 2:
+                try{
+                    const contentOsti = extractContentOsti(await getData(url.href.concat('', line.split(' ').join("%20"))));
+                    saveJson(contentOsti);
+                }catch(e){
+                    console.log(e);
+                }
+                break;
+            case 3:
+                try{
+                    url.searchParams.set("q", search);
+                    const contentCore = extractContentCore(await getData(url.href.replace('%2B', '+')));
+                    saveJson(contentCore);
+                }catch(e){
+                    console.log(e);
+                }
+                console.log('contentCore');
+                break;
+            case 4:
+                try{
+                    url.searchParams.set("q", search);
+                    const contentEric = extractContentEric(await getData(url.href.replace('%2B', '+')));
+                    saveJson(contentEric);
+                }catch(e){
+                    console.log(e);
+                }
+                break;
+            case 5:
+                try{
+                    url.searchParams.set("query", search);
+                    const contentArxiv = extractContentArxiv(await getData(url.href.replace('%2B', '+')));
+                    saveJson(contentArxiv);
+                }catch(e){
+                    console.log(e);
+                }
+                break;
+            case 6:
+                try{
+                    url.searchParams.set("query", search);
+                    const contentDlc = extractContentDlc(await getData(url.href.replace('%2B', '+')));
+                    saveJson(contentDlc);
+                }catch(e){
+                    console.log(e);
+                }
+                break;
+            case 7:
+                try{
+                    url.searchParams.set("lookfor", search);
+                    const contentEconbiz = extractContentEconbiz(await getData(url.href.replace('%2B', '+')));
+                    saveJson(contentEconbiz);
+                }catch(e){
+                    console.log(e);
+                }
+                break;
+            default:
+                console.log('default');
+                break;
+        }
+    }catch(e){
+        console.log(e);
     }
-    
 }; 
 
 const crawlTask = async (req, res) => {

@@ -2,6 +2,7 @@ import { SearchContext } from "./SearchContext"
 import { useState } from "react";
 import axios from 'axios'
 import { useForm } from "../hook/useForm";
+import { useLocation } from 'react-router-dom';
 
 
 export const SearchProvider = ({children}) => {
@@ -10,18 +11,20 @@ export const SearchProvider = ({children}) => {
     const [offset, setOffset] = useState(0);
     const [loading, setLoading] = useState(true);
 
-    // hook
+    // Hook
     const { valueSearch, onInputChange, onResetForm } = useForm({
         valueSearch: ''
     })
 
-    //Llamar al API
+    //Call the API
     const getLinks = async (line = '') => {
         try{
             console.log(line);
+            // Initial consult by sending line to search
             await axios.post(
                 'http://localhost:3001/api/search', {line: line}
-            ).then(r => console.log(r.data) )
+            )
+            .then(r => console.log(r.data) )
             .catch(function (error) {
                 if (error.response) {
                         console.log(error.response.data);
@@ -35,13 +38,14 @@ export const SearchProvider = ({children}) => {
                 // console.log(error.config);
             })
             .finally( setLoading(false) )
+
+            // Retrieve the data found
             await axios.get(
                 'http://localhost:3001/api/results'
             )
             .then(r => {
-                const results = r.data.slice(offset, offset+15);
                 setAllLinks(r.data);
-                setShowLinks([...showLinks, ...results]);
+                setShowLinks(r.data.slice(offset, offset+15));
             })
             .catch(function (error) {
                 if (error.response) {
@@ -63,6 +67,13 @@ export const SearchProvider = ({children}) => {
         
     }
 
+    // Show 15 more links of the total results
+    const onLoadMoreLinks = () =>{
+        const moreLinks = allLinks.slice(offset, offset+15);
+        setShowLinks([...showLinks, ...moreLinks]);
+    }
+
+    // Set the offset to show more links of the total results
     const onClickLoadMore = () => {
         setOffset(offset + 15);
     }
@@ -75,9 +86,10 @@ export const SearchProvider = ({children}) => {
                 onResetForm,
                 allLinks,
                 showLinks,
+                offset,
                 getLinks,
                 onClickLoadMore,
-                offset
+                onLoadMoreLinks,
             }}
         >
             {children}

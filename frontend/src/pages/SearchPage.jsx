@@ -5,28 +5,35 @@ import { useLocation } from 'react-router-dom';
 
 export const SearchPage = () => {
 
-    const { getLinks, allLinks, onClickLoadMore, offset } = useContext(SearchContext);
+    const { getLinks, allLinks, onClickLoadMore, offset, onLoadMoreLinks} = useContext(SearchContext);
     const [loading, setLoading] = useState(true);
 
     const location = useLocation();
 
     const feacthLinks = async () => {
+        
         await getLinks(location.state);
         setLoading(false);
     }
 
     useEffect(() => {
+        setLoading(true);
         feacthLinks();
+    }, [location])
+
+    useEffect(() => {
+        onLoadMoreLinks();
     }, [offset])
-    
 
     return (
-        <>  {
+        <>  
+            <NavigateBar />
+        {
             loading ? (
                 <Loader />
             ) : (
                 <>
-                    <NavigateBar />
+                    
                     <div className="container">
                         <p className="p-search">
                             Se encontraron <span>{allLinks.length}</span> resultados:
