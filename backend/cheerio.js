@@ -57,7 +57,7 @@ const extractContentScielo = ($) =>
 				url: $item.find('a[target]').attr('href'), 
 			}; 
 		}) 
-		.toArray(); 
+	.toArray(); 
 
 const extractContentBioMed = ($) => 
 $('.c-listing__item') 
@@ -191,7 +191,6 @@ const crawl = async (url_base, num, line) => {
                 }catch(e){
                     console.log(e);
                 }
-                console.log('contentCore');
                 break;
             case 4:
                 try{
