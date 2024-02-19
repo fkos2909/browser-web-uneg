@@ -1,40 +1,7 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
-const fs = require("fs");
-const path = require("path");
-
-const pathJson = path.join(__dirname, '../data.json');
-
-const readJson = () => {
-    const base = {articles: []};
-    try{
-        const data = fs.readFileSync(pathJson, 'utf-8');
-        const { articles } = (data.length === 0) ?  base :  JSON.parse(data);
-        return articles;
-    }
-    catch(error){
-        fs.writeFileSync("data.json", JSON.stringify(base, null, 4), 'utf-8');
-        return [];
-    }
-    
-}
-
-const writeJson = (data) => {    
-    try{
-        fs.writeFileSync(pathJson, JSON.stringify({articles: data}, null, 4), 'utf-8');
-    }
-    catch(error){
-        console.log(error);
-    }
-}
-
-const saveJson = (data) => {
-    let articles = readJson();
-    data.forEach((element => {
-        articles.push(element);
-    }))
-    writeJson(articles);
-}
+const {readJson, writeJson, saveJson} = require('./fileManagement');
+let count = 1;
 
 const domains = [
     {0:'https://search.scielo.org/?lang=es&count=15&from=1&output=site&sort=&format=summary&fb=&page=1&q='},
@@ -51,7 +18,13 @@ const extractContentScielo = ($) =>
     $('.item') 
 		.map((_, item) => { 
 			const $item = $(item); 
+            const authors = $item.find('div.authors').map((_, a) => {
+                const $a = $(a);
+                return $a.find('a').text();
+            }).toArray();
 			return {  
+                num: count++,
+                author: authors,
 				id: $item.attr('id'), 
 				title: $item.find('strong.title').text(), 
 				url: $item.find('a[target]').attr('href'), 
@@ -63,7 +36,9 @@ const extractContentBioMed = ($) =>
 $('.c-listing__item') 
     .map((_, item) => { 
         const $item = $(item); 
-        return {  
+        return { 
+            num: count++, 
+            author: $item.find('.c-listing__authors-list').text(),
             id: $item.find('a[data-test="pdf-link"]').attr('data-track-label'), 
             title: $item.find('a[data-test="title-link"]').text(), 
             url: $item.find('a[data-test="pdf-link"]').attr('href'), 
@@ -78,6 +53,8 @@ $('.article')
         const $item = $(item); 
         const href = $item.find('a.fulltext-link').attr('href') === undefined ? $item.find('a.doi-link').attr('href') : url.concat('', $item.find('a.fulltext-link').attr('href'));
         return {  
+            num: count++,
+            author: $item.find('.authors').text(),
             id: $item.find('a[data-ostiid]').attr('data-ostiid'), 
             title: $item.find('h2.title').find('a').text(), 
             url: href, 
@@ -90,6 +67,7 @@ $('.styles-container-2Sli1')
     .map((_, item) => {
         const $item = $(item); 
         return {  
+            num: count++,
             id: $item.attr('id'), 
             title: $item.find('h3.styles-title-1k6Ib').find('a').text(), 
             url: $item.find('h3.styles-title-1k6Ib').find('a').attr('href'), 
@@ -102,9 +80,11 @@ $('.r_i')
     .map((_, item) => {
         const $item = $(item); 
         return {  
+            num: count++,
+            author: $item.find('.r_a').text(),
             id: $item.attr('id'), 
             title: $item.find('.r_t').find('a').text(), 
-            url: $item.find('.r_f').find('a').attr('href'), 
+            url: $item.find('.r_f').find('a').attr('title'), 
         }; 
     }) 
     .toArray(); 
@@ -114,6 +94,8 @@ $('.arxiv-result')
     .map((_, item) => {
         const $item = $(item); 
         return {  
+            num: count++,
+            author: $item.find('.authors').find('a').text(),
             id: $item.find('.list-title').find('a').text(), 
             title: $item.find('.title').text().replace('\n      \n        ', '').replace('\n      \n    ', ''), 
             url: $item.find('.list-title').find('span').find('a').attr('href'), 
@@ -122,14 +104,16 @@ $('.arxiv-result')
     .toArray(); 
 
 const extractContentDlc = ($) => 
-$('.artifact-title') 
+$('.ds-artifact-item') 
     .map((_, item) => {
-        const url = 'https://www.econbiz.de/';
+        const url = 'https://dlc.dlib.indiana.edu';
         const $item = $(item); 
         return {  
-            id: $item.find('a').attr('href'), 
-            title: $item.find('a').text(), 
-            url: url.concat('', $item.find('a').attr('href')), 
+            num: count++,
+            author: $item.find('.artifact-info').find('.author').text(),
+            id: $item.find('.artifact-title').find('a').attr('href'), 
+            title: $item.find('.artifact-title').find('a').text(), 
+            url: url.concat('', $item.find('.artifact-title').find('a').attr('href')), 
         }; 
     }) 
     .toArray(); 
@@ -140,7 +124,9 @@ $('.result')
         const url = 'https://www.econbiz.de';
         const $item = $(item); 
         return {  
+            num: count++,
             id: $item.attr('id'), 
+            author: $item.find('.authors').text(),
             title: $item.find('.result-content').find('a.title').text().replace('\n                              ', '').replace('\n        ', ''), 
             url: url.concat('', $item.find('.result-content').find('a.title').attr('href')), 
         }; 
@@ -154,7 +140,8 @@ const getData = async (url) => {
 
 const crawl = async (url_base, num, line) => { 
     try{
-        const search = line.split(' ').join("+");
+        var noValido = /\s/;
+        const search = noValido.test(line) ? line.split(' ').join("+") : line;
         const url = new URL(url_base);
         switch(num){
             case 0:
@@ -177,20 +164,21 @@ const crawl = async (url_base, num, line) => {
                 break;
             case 2:
                 try{
-                    const contentOsti = extractContentOsti(await getData(url.href.concat('', line.split(' ').join("%20"))));
+                    var check = /[+]/;
+                    const contentOsti = extractContentOsti(await getData(url.href.concat('', check.test(search) ? search.split('+').join("%20") : search)));
                     saveJson(contentOsti);
                 }catch(e){
                     console.log(e);
                 }
                 break;
             case 3:
-                try{
-                    url.searchParams.set("q", search);
-                    const contentCore = extractContentCore(await getData(url.href.replace('%2B', '+')));
-                    saveJson(contentCore);
-                }catch(e){
-                    console.log(e);
-                }
+                // try{
+                //     url.searchParams.set("q", search);
+                //     const contentCore = extractContentCore(await getData(url.href.replace('%2B', '+')));
+                //     saveJson(contentCore);
+                // }catch(e){
+                //     console.log(e);
+                // }
                 break;
             case 4:
                 try{
@@ -239,16 +227,12 @@ const crawl = async (url_base, num, line) => {
 
 const crawlTask = async (req, res) => {
 	for (let i=0; i<domains.length; i++) {
-        
 		await crawl(domains[i][i], i, req.body.line);
 	} 
-    return res;
-}; 
-
-const crawlTaskResults = async (req, res) => {
     let articles = readJson();
     writeJson([]);
+    count = 1;
     return articles;
-}
+}; 
 
-module.exports = {crawlTask, crawlTaskResults};
+module.exports = {crawlTask};

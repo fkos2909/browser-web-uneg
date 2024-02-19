@@ -18,49 +18,26 @@ export const SearchProvider = ({children}) => {
 
     //Call the API
     const getLinks = async (line = '') => {
+        
         try{
-            console.log(line);
-            // Initial consult by sending line to search
+            // Send the line to search up for
             await axios.post(
                 'http://localhost:3001/api/search', {line: line}
             )
-            .then(r => console.log(r.data) )
-            .catch(function (error) {
-                if (error.response) {
-                        console.log(error.response.data);
-                        console.log(error.response.status);
-                        console.log(error.response.headers);
-                } else if (error.request) {
-                    console.log(error.request);
-                } else {
-                    console.log('Error', error.message);
-                }
-                // console.log(error.config);
-            })
-            .finally( setLoading(false) )
-
-            // Retrieve the data found
-            await axios.get(
-                'http://localhost:3001/api/results'
-            )
             .then(r => {
                 setAllLinks(r.data);
-                setShowLinks(r.data.slice(offset, offset+15));
+                setShowLinks(r.data.slice(0, 15));
             })
-            .catch(function (error) {
+            .catch(error => {
                 if (error.response) {
-                        console.log(error.response.data);
-                        console.log(error.response.status);
-                        console.log(error.response.headers);
+                    alert('Error data: ' + error.response.data + ' Error Status: '+ error.response.status + ' Error Headers: ' + error.response.headers)
                 } else if (error.request) {
-                    console.log(error.request);
+                    alert('Error request: ' + error.request);
                 } else {
-                    console.log('Error', error.message);
+                    alert('Error message: ', error.message);
                 }
-                // console.log(error.config);
             })
             .finally( setLoading(false) )
-
         }catch(e){
             console.log(e);
         }

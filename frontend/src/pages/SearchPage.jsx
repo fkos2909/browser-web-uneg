@@ -5,13 +5,12 @@ import { useLocation } from 'react-router-dom';
 
 export const SearchPage = () => {
 
-    const { getLinks, allLinks, onClickLoadMore, offset, onLoadMoreLinks} = useContext(SearchContext);
+    const { getLinks, setOffset, allLinks, showLinks, onClickLoadMore, offset, onLoadMoreLinks} = useContext(SearchContext);
     const [loading, setLoading] = useState(true);
 
     const location = useLocation();
 
     const feacthLinks = async () => {
-        
         await getLinks(location.state);
         setLoading(false);
     }
@@ -33,18 +32,24 @@ export const SearchPage = () => {
                 <Loader />
             ) : (
                 <>
-                    
                     <div className="container">
                         <p className="p-search">
                             Se encontraron <span>{allLinks.length}</span> resultados:
                         </p>
                     </div>
                     <LinksList />
-                    <div className="container-btn-load-more container">
-                        <button className="btn-load-more" onClick={onClickLoadMore}>
-                            Cargar más
-                        </button>
-                    </div>
+                    {
+                        showLinks.length < allLinks.length ? (
+                            <div className="container-btn-load-more container">
+                                <button className="btn-load-more" onClick={onClickLoadMore}>
+                                    Cargar más
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                            </>
+                        )
+                    }
                 </>
             )
         }

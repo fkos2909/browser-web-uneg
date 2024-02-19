@@ -5,9 +5,12 @@ export const CardLink = ({ item }) => {
     return (
         <Link to={item.url} className='card' >
             <div className="card-info">
-                <h3>{item.title}</h3>
-                <h6>autores</h6>
-                <h6>fuente</h6>
+                <span className="link-num">N°{item.num}.</span>
+                <div className="title-info">
+                    <h3>{item.title}</h3>
+                    <h6>{item.author}</h6>
+                </div>
+                    
             </div>
             
         </Link>
