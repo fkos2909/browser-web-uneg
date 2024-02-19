@@ -18,7 +18,6 @@ export const SearchProvider = ({children}) => {
 
     //Call the API
     const getLinks = async (line = '') => {
-        
         try{
             // Send the line to search up for
             await axios.post(
@@ -37,7 +36,8 @@ export const SearchProvider = ({children}) => {
                     alert('Error message: ', error.message);
                 }
             })
-            .finally( setLoading(false) )
+            .finally( f => { setLoading(false); 
+            setOffset(0); } )
         }catch(e){
             console.log(e);
         }
